@@ -61,15 +61,29 @@ void Timeline::stepTo( float absoluteTime )
 	mCurrentTime = absoluteTime;
 	
 	eraseMarked();
-		
+	
+	// We need to determine whether or not the animation has started, finished, or both.
+	mComplete = mComplete || mItems.size() > 0;
+	bool status = mComplete;
+	bool tweens_complete = mHasStarted;
+	
 	// we need to cache the end(). If a tween's update() fn or similar were to manipulate
 	// the list of items by adding new ones, we'll have invalidated our iterator.
 	// Deleted items are never removed immediately, but are marked for deletion.
 	s_iter endItem = mItems.end();
 	for( s_iter iter = mItems.begin(); iter != endItem; ++iter ) {
 		iter->second->stepTo( mCurrentTime, reverse );
+		if(tweens_complete) tweens_complete = tweens_complete && iter->second->isComplete();
 		if( iter->second->isComplete() && iter->second->getAutoRemove() )
 			iter->second->mMarkedForRemoval = true;
+	}
+	
+	// If our status changed in a meaningful way we'll need a chance to invoke the callback(s)
+	if (status && tweens_complete) {
+		if(mComplete && mFinishFunction)
+			mFinishFunction();
+		else if(!mComplete && mStartFunction)
+			mStartFunction();
 	}
 	
 	eraseMarked();	

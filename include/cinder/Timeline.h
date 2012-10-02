@@ -41,6 +41,8 @@ typedef std::shared_ptr<class Timeline>		TimelineRef;
 	
 class Timeline : public TimelineItem {		
   public:
+	typedef std::function<void ()>		CallbackFn;
+	
 	//! Creates a new timeline, defaulted to infinite
 	static TimelineRef	create() { TimelineRef result( new Timeline() ); result->setInfinite( true ); return result; }
 
@@ -146,6 +148,15 @@ class Timeline : public TimelineItem {
 	void insert( TimelineItemRef item );
 	//! adds an item to the timeline, setting its startTime to be at \a atTime. Safe to use from callback fn's.
 	void insert( TimelineItemRef item, float atTime ) { item->mStartTime = atTime; insert( item ); }
+	
+	//! Sets the callback function for the start of the timeline animation
+	void				setStartFn( CallbackFn startFunction ) { mStartFunction = startFunction; }
+	//! Returns the callback function for the start of the timeline animation
+	CallbackFn			getStartFn() const { return mStartFunction; }
+	//! Sets the callback function for the end of the timeline animation
+	void				setFinishFn( CallbackFn finishFn ) { mFinishFunction = finishFn; }
+	//! Returns the callback function for the end of the timeline animation
+	CallbackFn			getFinishFn() const { return mFinishFunction; }
 
 	//! Returns the number of items in the Timeline
 	size_t				getNumItems() const { return mItems.size(); }
@@ -204,6 +215,9 @@ class Timeline : public TimelineItem {
 
 	bool						mDefaultAutoRemove;
 	float						mCurrentTime;
+	
+	CallbackFn					mStartFunction, mFinishFunction;
+//	CallbackFn					mLoopFunction, mPingPongFunction;
 	
 	std::multimap<void*,TimelineItemRef>		mItems;
 	
