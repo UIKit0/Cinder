@@ -1,5 +1,7 @@
 #include <map>
 
+#include <boost/bind.hpp>
+
 #include "cinder/app/AppBasic.h"
 #include "cinder/Timeline.h"
 #include "cinder/Tween.h"
@@ -59,6 +61,21 @@ void TimelineTest::mouseDown( MouseEvent event )
 {
 }
 
+void dummy()
+{
+	console() << "TimelineTest dummy" << std::endl;
+}
+
+void end()
+{
+	console() << "TimelineTest end" << std::endl;
+}
+
+void start()
+{
+	console() << "TimelineTest start" << std::endl;
+}
+
 void TimelineTest::keyDown( KeyEvent event )
 {
 	switch(event.getCode()){
@@ -69,15 +86,26 @@ void TimelineTest::keyDown( KeyEvent event )
 			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 2.0f );
 			mTimeline2->appendTo( &mAnim2, 100.0f, 175.0f, 2.0f );
 			mTimeline2->appendTo( &mAnim2, 175.0f, 50.0f, 2.0f );
+			mTimeline2->startFunction(boost::bind(&start));
+			mTimeline2->finishFunction(boost::bind(&end));
 			mTimeline2->appendPingPong();
 			break;
 			
 		case KeyEvent::KEY_s:
 			timeline().add( mTimeline );
+			mTimeline->setDefaultAutoRemove(false);
 			mTimeline->apply( &mAnim, Vec2f( 10,10 ), Vec2f( 100,100 ), 1.0f, EaseOutCubic());
 			mTimeline->appendTo( &mAnim, Vec2f( 100,100 ), Vec2f( 100,300 ), 1.0f, EaseNone());
 			mTimeline->appendTo( &mAnim, Vec2f( 100,300 ), Vec2f( 10,10 ), 1.0f, EaseNone());
-			mTimeline->appendPingPong();
+			mTimeline->setLoop();
+//			mTimeline->appendPingPong();
+			mTimeline->startFunction(boost::bind(&start));
+			mTimeline->finishFunction(boost::bind(&end));
+			break;
+			
+		case KeyEvent::KEY_e:
+//			mTimeline->apply( &mAnim, Vec2f( 10,10 ), Vec2f( 100,100 ), 1.0f, EaseOutCubic());
+			mTimeline->appendTo( &mAnim, Vec2f( 300,0 ), 2.0f);
 			break;
 			
 		case KeyEvent::KEY_d:
