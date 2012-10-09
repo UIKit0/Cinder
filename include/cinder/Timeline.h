@@ -199,10 +199,10 @@ class Timeline : public TimelineItem {
 	virtual void reverse();
 	virtual TimelineItemRef cloneReverse() const;
 	virtual TimelineItemRef clone() const;
-	virtual void start( bool reverse ) { if(mStartFunction) mStartFunction(); }
+	virtual void start( bool reverse ) {}	//{ if(mStartFunction) mStartFunction(); }
 	virtual void loopStart();
 	virtual void update( float absTime );
-	virtual void complete( bool reverse ) {}// { if(mFinishFunction) mFinishFunction(); }
+	virtual void complete( bool reverse ) {}	// { if(mFinishFunction) mFinishFunction(); }
 
 	void						eraseMarked();
 	virtual float				calcDuration() const;

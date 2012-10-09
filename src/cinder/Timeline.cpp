@@ -65,21 +65,24 @@ void Timeline::stepTo( float absoluteTime )
 	// we need to cache the end(). If a tween's update() fn or similar were to manipulate
 	// the list of items by adding new ones, we'll have invalidated our iterator.
 	// Deleted items are never removed immediately, but are marked for deletion.
-	bool item_complete = true;
+	bool items_complete = true;
 	s_iter endItem = mItems.end();
 	for( s_iter iter = mItems.begin(); iter != endItem; ++iter ) {
 		iter->second->stepTo( mCurrentTime, reverse );
-		item_complete = item_complete? item_complete && iter->second->isComplete(): false;
+		items_complete = items_complete? items_complete && iter->second->isComplete(): false;
 		if( iter->second->isComplete() && iter->second->getAutoRemove() )
 			iter->second->mMarkedForRemoval = true;
 	}
 	
-	if(!mComplete && item_complete){
-		mComplete = item_complete;
-		if(mFinishFunction) mFinishFunction();
+	if(mFinishFunction && !mComplete && items_complete){
+		mFinishFunction();
 	}
+	if(mStartFunction && mComplete && !items_complete){
+		mStartFunction();
+	}
+	mComplete = items_complete;
 	
-	eraseMarked();	
+	eraseMarked();
 }
 
 CueRef Timeline::add( std::function<void ()> action, float atTime )
@@ -127,6 +130,10 @@ void Timeline::add( TimelineItemRef item )
 	item->mParent = this;
 	item->mStartTime = mCurrentTime;
 	
+	// CJJ: This enables us to use the mComplete boolean to test for the start and finish of the timeline
+	mComplete = true;
+	//if(dynamic_cast<Timeline*>(item.get())) item->mComplete = true;
+	
 	// CJJ:	If this is not here, Timeline's that are added after being removed will immediately be removed again
 	item->mMarkedForRemoval = false;
 	
@@ -136,7 +143,7 @@ void Timeline::add( TimelineItemRef item )
 
 void Timeline::insert( TimelineItemRef item )
 {
-	item->mParent = this;
+	item->mParent = this;	
 	mItems.insert( make_pair( item->mTarget, item ) );
 	setDurationDirty();
 }

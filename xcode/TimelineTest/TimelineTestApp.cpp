@@ -9,7 +9,7 @@
 
 using namespace ci;
 using namespace ci::app;
-using namespace std;
+//using namespace std;
 
 class TimelineTest : public AppBasic {
 public:
@@ -18,6 +18,7 @@ public:
     void keyDown( KeyEvent event );
 	void update();
     void draw();
+	void dunny();
 	
     Anim<Vec2f> mAnim;
     Anim<float> mAnim2;
@@ -44,7 +45,8 @@ void TimelineTest::setup()
 	mTimeline2 = Timeline::create();
 	mTimeline2->setDefaultAutoRemove( true );
 	mTimeline2->setAutoRemove(false);
-	
+	timeline().add( mTimeline2 );
+//	timeline().add( mTimeline );
 	/*
 	std::multimap<void*,uint32_t>::iterator it;
 	mStuff.insert( std::pair<void*, uint32_t>(this, 20302) );
@@ -55,6 +57,11 @@ void TimelineTest::setup()
 	it = mStuff.find(this);
 	console() << it->second << std::endl;
 	*/
+}
+
+void TimelineTest::dunny()
+{
+	console() << "TimelineTest::DUNNY" << std::endl;
 }
 
 void TimelineTest::mouseDown( MouseEvent event )
@@ -80,7 +87,7 @@ void TimelineTest::keyDown( KeyEvent event )
 {
 	switch(event.getCode()){
 		case KeyEvent::KEY_a:
-			timeline().add( mTimeline2 );
+//			timeline().add( mTimeline2 );
 //			mTimeline->apply( &mAnim, Vec2f( 0,0 ), 4.50f,  EaseOutCubic() );
 //			mTimeline->apply( &mAnim, Vec2f( 200, 50 ), Vec2f( 200, 200 ), 2.0f ).delay( 1.0f ).loop( true );
 			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 2.0f );
@@ -93,11 +100,11 @@ void TimelineTest::keyDown( KeyEvent event )
 			
 		case KeyEvent::KEY_s:
 			timeline().add( mTimeline );
-			mTimeline->setDefaultAutoRemove(false);
+//			mTimeline->setDefaultAutoRemove(false);
 			mTimeline->apply( &mAnim, Vec2f( 10,10 ), Vec2f( 100,100 ), 1.0f, EaseOutCubic());
 			mTimeline->appendTo( &mAnim, Vec2f( 100,100 ), Vec2f( 100,300 ), 1.0f, EaseNone());
 			mTimeline->appendTo( &mAnim, Vec2f( 100,300 ), Vec2f( 10,10 ), 1.0f, EaseNone());
-			mTimeline->setLoop();
+//			mTimeline->setLoop();
 //			mTimeline->appendPingPong();
 			mTimeline->startFunction(boost::bind(&start));
 			mTimeline->finishFunction(boost::bind(&end));
