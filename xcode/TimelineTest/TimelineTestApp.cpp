@@ -1,7 +1,5 @@
 #include <map>
 
-#include <boost/bind.hpp>
-
 #include "cinder/app/AppBasic.h"
 #include "cinder/Timeline.h"
 #include "cinder/Tween.h"
@@ -26,22 +24,6 @@ public:
 	
 	// std::multimap<void*,uint32_t> mStuff;
 };
-
-void myStartCallbackFn() {
-	std::cout << " function start callback!" << std::endl;
-}
-
-void myEndCallbackFn() {
-	std::cout << " function end callback!" << std::endl;
-}
-
-void myPingPongCallbackFn() {
-	std::cout << " function ping-pong callback!" << std::endl;
-}
-
-void myLoopCallbackFn() {
-	std::cout << " function loooop!" << std::endl;
-}
 
 void TimelineTest::setup()
 {
@@ -84,26 +66,18 @@ void TimelineTest::keyDown( KeyEvent event )
 			timeline().add( mTimeline2 );
 //			mTimeline->apply( &mAnim, Vec2f( 0,0 ), 4.50f,  EaseOutCubic() );
 //			mTimeline->apply( &mAnim, Vec2f( 200, 50 ), Vec2f( 200, 200 ), 2.0f ).delay( 1.0f ).loop( true );
-//			mTimeline2->setStartFn(boost::bind(&myStartCallbackFn));
-			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 0.75f );
-			mTimeline2->appendTo( &mAnim2, 100.0f, 175.0f, 0.75f );
-			mTimeline2->appendTo( &mAnim2, 175.0f, 50.0f, 0.75f );
+			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 2.0f );
+			mTimeline2->appendTo( &mAnim2, 100.0f, 175.0f, 2.0f );
+			mTimeline2->appendTo( &mAnim2, 175.0f, 50.0f, 2.0f );
 			mTimeline2->appendPingPong();
-			mTimeline2->add(boost::bind(&myPingPongCallbackFn), 2.25f);
-//			mTimeline2->setFinishFn(boost::bind(&myEndCallbackFn));
 			break;
 			
 		case KeyEvent::KEY_s:
 			timeline().add( mTimeline );
-			mTimeline->setDefaultAutoRemove(false);
-			mTimeline->setLoop();
-//			mTimeline->setStartFn(boost::bind(&myStartCallbackFn));
-			mTimeline->add(boost::bind(&myPingPongCallbackFn), 2.999f);
 			mTimeline->apply( &mAnim, Vec2f( 10,10 ), Vec2f( 100,100 ), 1.0f, EaseOutCubic());
 			mTimeline->appendTo( &mAnim, Vec2f( 100,100 ), Vec2f( 100,300 ), 1.0f, EaseNone());
 			mTimeline->appendTo( &mAnim, Vec2f( 100,300 ), Vec2f( 10,10 ), 1.0f, EaseNone());
-//			mTimeline->appendPingPong();
-//			mTimeline->setFinishFn(boost::bind(&myEndCallbackFn));
+			mTimeline->appendPingPong();
 			break;
 			
 		case KeyEvent::KEY_d:
