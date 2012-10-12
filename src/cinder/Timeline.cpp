@@ -39,6 +39,8 @@ Timeline::Timeline()
 	: TimelineItem( 0, 0, 0, 0 ), mDefaultAutoRemove( true ), mCurrentTime( 0 )
 {
 	mUseAbsoluteTime = true;
+	mComplete = true;
+	mAutoRemove = false;
 }
 
 Timeline::Timeline( const Timeline &rhs )
@@ -65,22 +67,23 @@ void Timeline::stepTo( float absoluteTime )
 	// we need to cache the end(). If a tween's update() fn or similar were to manipulate
 	// the list of items by adding new ones, we'll have invalidated our iterator.
 	// Deleted items are never removed immediately, but are marked for deletion.
-	bool items_complete = true;
+	bool items_complete = true;	// CJJ
 	s_iter endItem = mItems.end();
 	for( s_iter iter = mItems.begin(); iter != endItem; ++iter ) {
 		iter->second->stepTo( mCurrentTime, reverse );
-		items_complete = items_complete? items_complete && iter->second->isComplete(): false;
+		items_complete = items_complete? items_complete && iter->second->isComplete(): false;	// CJJ
 		if( iter->second->isComplete() && iter->second->getAutoRemove() )
 			iter->second->mMarkedForRemoval = true;
 	}
-	
+
+	// CJJ {
 	if(mFinishFunction && !mComplete && items_complete){
 		mFinishFunction();
 	}
 	if(mStartFunction && mComplete && !items_complete){
 		mStartFunction();
 	}
-	mComplete = items_complete;
+	mComplete = items_complete;	// } CJJ
 	
 	eraseMarked();
 }
@@ -131,7 +134,7 @@ void Timeline::add( TimelineItemRef item )
 	item->mStartTime = mCurrentTime;
 	
 	// CJJ: This enables us to use the mComplete boolean to test for the start and finish of the timeline
-	mComplete = true;
+	// mComplete = true;
 	//if(dynamic_cast<Timeline*>(item.get())) item->mComplete = true;
 	
 	// CJJ:	If this is not here, Timeline's that are added after being removed will immediately be removed again
@@ -290,6 +293,7 @@ void Timeline::replaceTarget( void *target, void *replacementTarget )
 void Timeline::reset( bool unsetStarted )
 {
 	TimelineItem::reset( unsetStarted );
+	mComplete = true;	// CJJ
 	
 	for( s_iter iter = mItems.begin(); iter != mItems.end(); ++iter )
 		iter->second->reset( unsetStarted );

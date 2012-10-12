@@ -44,7 +44,6 @@ void TimelineTest::setup()
 	
 	mTimeline2 = Timeline::create();
 	mTimeline2->setDefaultAutoRemove( true );
-	mTimeline2->setAutoRemove(false);
 	timeline().add( mTimeline2 );
 //	timeline().add( mTimeline );
 	/*
@@ -87,12 +86,14 @@ void TimelineTest::keyDown( KeyEvent event )
 {
 	switch(event.getCode()){
 		case KeyEvent::KEY_a:
+//			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 1.0f ).delay(1.0).pingPong(true).autoRemove(false);
 //			timeline().add( mTimeline2 );
 //			mTimeline->apply( &mAnim, Vec2f( 0,0 ), 4.50f,  EaseOutCubic() );
 //			mTimeline->apply( &mAnim, Vec2f( 200, 50 ), Vec2f( 200, 200 ), 2.0f ).delay( 1.0f ).loop( true );
-			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 2.0f );
-			mTimeline2->appendTo( &mAnim2, 100.0f, 175.0f, 2.0f );
-			mTimeline2->appendTo( &mAnim2, 175.0f, 50.0f, 2.0f );
+			mTimeline2->apply( &mAnim2, 300.0f, 100.0f, 1.0f );
+			mTimeline2->appendTo( &mAnim2, 100.0f, 175.0f, 1.0f );
+			mTimeline2->appendTo( &mAnim2, 175.0f, 50.0f, 1.0f );//.loop(true).autoRemove(false);
+//			mTimeline2->add(boost::bind(&dummy), mTimeline2->getCurrentTime() + 4.5f);
 			mTimeline2->startFunction(boost::bind(&start));
 			mTimeline2->finishFunction(boost::bind(&end));
 			mTimeline2->appendPingPong();
@@ -115,7 +116,7 @@ void TimelineTest::keyDown( KeyEvent event )
 			mTimeline->appendTo( &mAnim, Vec2f( 300,0 ), 2.0f);
 			break;
 			
-		case KeyEvent::KEY_d:
+		case KeyEvent::KEY_c:
 			timeline().remove( mTimeline );
 			break;
 			
