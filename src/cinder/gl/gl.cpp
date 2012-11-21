@@ -485,6 +485,90 @@ void disableDepthWrite()
 	glDepthMask( GL_FALSE );
 }
 
+void pointSize( float size )
+{
+	glPointSize( (GLfloat)size );
+}
+
+void enablePointSprites( float point_size )
+{
+	glEnable( GL_POINT_SPRITE );
+	glTexEnvi( GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE );
+	glPointSize( (GLfloat)point_size );
+}
+
+void disablePointSprites()
+{
+	glDisable( GL_POINT_SPRITE );
+}
+
+void enableDepthTest()
+{
+	glEnable( GL_DEPTH_TEST );
+}
+
+void disableDepthTest()
+{
+	glDisable( GL_DEPTH_TEST );
+}
+
+void enableScissorTest()
+{
+	glEnable( GL_SCISSOR_TEST );
+}
+
+void disableScissorTest()
+{
+	glDisable( GL_SCISSOR_TEST );
+}
+
+void scissorWindow( int x, int y, int width, int height ) {
+	glEnable( GL_SCISSOR_TEST );
+	glScissor( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+}
+
+void enableStencilTest()
+{
+	glEnable( GL_STENCIL_TEST );
+}
+
+void disableStencilTest()
+{
+	glDisable( GL_STENCIL_TEST );
+}
+
+void enableLineSmoothing()
+{
+	glEnable( GL_LINE_SMOOTH );
+}
+
+void disableLineSmoothing()
+{
+	glDisable( GL_LINE_SMOOTH );
+}
+
+void lineWidth( float width )
+{
+	glLineWidth( (GLfloat)width );
+}
+
+void enableBackFaceCulling()
+{
+	glEnable( GL_CULL_FACE );
+	glCullFace( GL_BACK );
+}
+
+void enableFrontFaceCulling()
+{
+	glEnable( GL_CULL_FACE );
+	glCullFace( GL_FRONT );
+}
+
+void disableCulling()
+{
+	glDisable( GL_CULL_FACE );
+}
+
 void drawLine( const Vec2f &start, const Vec2f &end )
 {
 	float lineVerts[2*2];

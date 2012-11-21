@@ -215,6 +215,39 @@ void enableDepthRead( bool enable = true );
 //! Enables writing to the depth buffer when \a enable.
 void enableDepthWrite( bool enable = true );
 
+//! Sets the radius for point rendering
+void pointSize( float size );
+//! Enables point sprite rendering with optional point size \c GL_POINT_SPRITE
+void enablePointSprites( float point_size = 10.0f );
+//! Disables point sprite rendering \c GL_POINT_SPRITE
+void disablePointSprites();
+//! Enables the scissor test \c GL_DEPTH_TEST
+void enableDepthTest();
+//! Disables the depth test \c GL_DEPTH_TEST
+void disableDepthTest();
+//! Enables the scissor test \c GL_SCISSOR_TEST
+void enableScissorTest(); 
+//! Disables the scissor test \c GL_SCISSOR_TEST
+void disableScissorTest();
+//! Sets the scissor window, also enables the scissor test \c 
+void scissorWindow( int x, int y, int width, int height );
+//! Enables the stencil test \c GL_STENCIL_TEST
+void enableStencilTest();
+//! Disables the stencil test \c GL_STENCIL_TEST
+void disableStencilTest();
+//! Enables line smoothing \c GL_LINE_SMOOTH
+void enableLineSmoothing();
+//! Disables line smoothing \c GL_LINE_SMOOTH
+void disableLineSmoothing();
+//! Sets the width of the line rendering
+void lineWidth( float width );
+//! Enables culling for backward facing polygons only \c GL_BACK
+void enableBackFaceCulling();
+//! Enables culling for foreward facing polygons only \c GL_FRONT
+void enableFrontFaceCulling();
+//! Disables all culling modes \c GL_CULL_FACE
+void disableCulling();
+	
 //! Draws a line from \a start to \a end
 void drawLine( const Vec2f &start, const Vec2f &end );
 //! Draws a line from \a start to \a end
