@@ -28,6 +28,7 @@
 namespace cinder {
 namespace gl {
 
+//! Represents an OpenGL display list. \ImplShared
 class DisplayList {
  protected:
 	struct Obj;
