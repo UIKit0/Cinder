@@ -38,8 +38,10 @@ namespace cinder { namespace gl {
 
 typedef std::shared_ptr<class TextureFont>	TextureFontRef;
 
+//! Represents a texture atlas designed for rendering fonts efficiently 
 class TextureFont {
   public:
+	//! Represents a configuration state for the TextureFont object
 	class Format {
 	  public:
 		Format() : mTextureWidth( 1024 ), mTextureHeight( 1024 ), mPremultiply( false ), mMipmapping( false )
