@@ -33,9 +33,15 @@ namespace cinder { namespace gl {
 /** Represents an OpenGL Vertex Buffer Object \ImplShared */
 class Vbo {
  public:
-	/** Creates an uninitialized empty vertex buffer object */
+	/** 
+	 * Creates an uninitialized empty vertex buffer object 
+	 */
 	Vbo() {}
-	/** Creates a GL vertex buffer object by invoking <a href="http://www.opengl.org/sdk/docs/man3/xhtml/glGenBuffers.xml">glGenBuffers</a> */
+	/** 
+	 * Creates a GL vertex buffer object by invoking <a href="http://www.opengl.org/sdk/docs/man3/xhtml/glGenBuffers.xml">glGenBuffers</a> 
+	 * 
+	 * \param aTarget vbo target (GL_ARRAY_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, etc...)
+	 */
 	Vbo( GLenum aTarget );
 
 	//! Binds the OpenGL vertex buffer object using <a href="http://www.opengl.org/sdk/docs/man3/xhtml/glBindBuffer.xml">glBindBuffer</a>
@@ -85,23 +91,23 @@ class Vbo {
  * The mesh data is described using a VboMesh::Layout object. If the object is constructed 
  * from a TriMesh or TriMesh2d then the layout can be inferred. However, if the raw vertex
  * data is being loaded manually then the Layout object is used to describe what data is
- * defined. <br/>
+ * defined. 
  * 
  * The VboMesh also defines the VertexIter type which exposes the internal mesh data for 
- * modification using mapped dynamic buffers.<br/>
+ * modification using mapped dynamic buffers.
  * 
- * Example using an externally loaded OBJ file:<br/>
+ * Example using an externally loaded OBJ file:
 \code
 using namespace ci;
 
 ObjLoader loader( (DataSourceRef) app::loadResource( RES_CUBE_OBJ ) );
 TriMesh mesh;
 loader.load( &mesh );
-gl::VboMesh vbo_mesh( mesh );
-gl::draw(vbo_mesh);
+gl::VboMesh vboMesh( mesh );
+gl::draw(vboMesh);
 \endcode
- * <br/>
- * Example using raw vertex data:<br/>
+ * 
+ * Example using raw vertex data:
 \code
 using namespace ci;
 using namespace std;
@@ -119,26 +125,17 @@ gl::VboMesh vboMesh( totalVertices, totalQuads * 4, layout, GL_QUADS );
 
 // buffer our static data - the texcoords and the indices
 vector<uint32_t> indices;
+vector<Vec3f> positions;
 vector<Vec2f> texCoords;
-for( int x = 0; x < VERTICES_X; ++x ) {
-	for( int z = 0; z < VERTICES_Z; ++z ) {
-		// create a quad for each vertex, except for along the bottom and right edges
-		if( ( x + 1 < VERTICES_X ) && ( z + 1 < VERTICES_Z ) ) {
-			indices.push_back( (x+0) * VERTICES_Z + (z+0) );
-			indices.push_back( (x+1) * VERTICES_Z + (z+0) );
-			indices.push_back( (x+1) * VERTICES_Z + (z+1) );
-			indices.push_back( (x+0) * VERTICES_Z + (z+1) );
-		}
-		// the texture coordinates are mapped to [0,1.0)
-		texCoords.push_back( Vec2f( x / (float)VERTICES_X, z / (float)VERTICES_Z ) );
-	}
-}
-
+// populate the texCoords and indices containers with approprate values, then...
 vboMesh.bufferIndices( indices );
+vboMesh.bufferPositions( positions );
 vboMesh.bufferTexCoords2d( 0, texCoords );
+// update positions as needed ...
+gl::draw(vboMesh);
 \endcode
- * <br/>
- * The VboMesh and VertexIter objects are both designed with an \ImplShared <br/>
+ * 
+ * The VboMesh and VertexIter objects are both designed with an \ImplShared 
  * 
  */
 class VboMesh {
