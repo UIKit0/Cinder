@@ -35,7 +35,7 @@ GlslProg::Obj::~Obj()
 
 //////////////////////////////////////////////////////////////////////////
 // GlslProg
-    GlslProg::GlslProg( DataSourceRef vertexShader, DataSourceRef fragmentShader, DataSourceRef geometryShader, GLint geometryInputType, GLint geometryOutputType, GLint geometryOutputVertices)
+GlslProg::GlslProg( DataSourceRef vertexShader, DataSourceRef fragmentShader, DataSourceRef geometryShader, GLint geometryInputType, GLint geometryOutputType, GLint geometryOutputVertices)
 	: mObj( shared_ptr<Obj>( new Obj ) )
 {
 	mObj->mHandle = glCreateProgram();
