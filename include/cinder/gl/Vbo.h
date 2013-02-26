@@ -30,25 +30,36 @@
 
 namespace cinder { namespace gl {
 
-//! Represents an OpenGL vbo object \ImplShared
+/** Represents an OpenGL Vertex Buffer Object \ImplShared */
 class Vbo {
  public:
+	/** Creates an uninitialized empty vertex buffer object */
 	Vbo() {}
+	/** Creates a GL vertex buffer object by invoking <a href="http://www.opengl.org/sdk/docs/man3/xhtml/glGenBuffers.xml">glGenBuffers</a> */
 	Vbo( GLenum aTarget );
-	
+
+	//! Binds the OpenGL vertex buffer object using <a href="http://www.opengl.org/sdk/docs/man3/xhtml/glBindBuffer.xml">glBindBuffer</a>
 	void		bind();
+	//! Unbinds the OpenGL vertex buffer object 
 	void		unbind();
 	
+	//! Loads data into the buffer using <a href="http://www.opengl.org/sdk/docs/man/xhtml/glBufferData.xml">glBufferDataARB</a>
 	void		bufferData( size_t size, const void *data, GLenum usage );
+	//! Loads data into the buffer using <a href="http://www.opengl.org/sdk/docs/man/xhtml/glBufferSubData.xml">glBufferSubDataARB</a>
 	void		bufferSubData( ptrdiff_t offset, size_t size, const void *data );
 	
+	//! Returns a pointer to the raw VBO buffer data using <a href="http://www.opengl.org/sdk/docs/man/xhtml/glMapBuffer.xml">glMapBuffer</a>
 	uint8_t*	map( GLenum access );
+	//! Un-maps the mapped VBO buffer using glUnmapBuffer
 	void		unmap();
 
+	//! Returns the GL target for the VBO (GL_ARRAY_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, GL_ELEMENT_ARRAY_BUFFER, etc...)
 	GLenum		getTarget() const { return mObj->mTarget; }
+	//! Returns the id representing the GL VBO
 	GLuint		getId() const { return mObj->mId; }
 	
  protected:
+	/** Internal shared implementation for the vertex buffer object */
 	struct Obj {
 		Obj( GLenum aTarget );
 		~Obj();
@@ -68,101 +79,162 @@ class Vbo {
 	//@}  
 };
 
-//! Represents a complete mesh stored as a set of OpenGL vbos \ImplShared
+//! Represents a complete mesh stored as a set of OpenGL Vertex Buffer Objects
+/** 
+ * The VboMesh object contains a static and dynamic Vbos which are used to draw mesh data. 
+ * The mesh data is described using a VboMesh::Layout object. If the object is constructed 
+ * from a TriMesh or TriMesh2d then the layout can be inferred. However, if the raw vertex
+ * data is being loaded manually then the Layout object is used to describe what data is
+ * defined. <br/>
+ * 
+ * The VboMesh also defines the VertexIter type which exposes the internal mesh data for 
+ * modification using mapped dynamic buffers.<br/>
+ * 
+ * Example using an externally loaded OBJ file:<br/>
+\code
+using namespace ci;
+
+ObjLoader loader( (DataSourceRef) app::loadResource( RES_CUBE_OBJ ) );
+TriMesh mesh;
+loader.load( &mesh );
+gl::VboMesh vbo_mesh( mesh );
+gl::draw(vbo_mesh);
+\endcode
+ * <br/>
+ * Example using raw vertex data:<br/>
+\code
+using namespace ci;
+using namespace std;
+
+// setup the parameters of the Vbo
+static const int VERTICES_X = 250, VERTICES_Z = 50;
+
+int totalVertices = VERTICES_X * VERTICES_Z;
+int totalQuads = ( VERTICES_X - 1 ) * ( VERTICES_Z - 1 );
+gl::VboMesh::Layout layout;
+layout.setStaticIndices();
+layout.setDynamicPositions();
+layout.setStaticTexCoords2d();
+gl::VboMesh vboMesh( totalVertices, totalQuads * 4, layout, GL_QUADS );
+
+// buffer our static data - the texcoords and the indices
+vector<uint32_t> indices;
+vector<Vec2f> texCoords;
+for( int x = 0; x < VERTICES_X; ++x ) {
+	for( int z = 0; z < VERTICES_Z; ++z ) {
+		// create a quad for each vertex, except for along the bottom and right edges
+		if( ( x + 1 < VERTICES_X ) && ( z + 1 < VERTICES_Z ) ) {
+			indices.push_back( (x+0) * VERTICES_Z + (z+0) );
+			indices.push_back( (x+1) * VERTICES_Z + (z+0) );
+			indices.push_back( (x+1) * VERTICES_Z + (z+1) );
+			indices.push_back( (x+0) * VERTICES_Z + (z+1) );
+		}
+		// the texture coordinates are mapped to [0,1.0)
+		texCoords.push_back( Vec2f( x / (float)VERTICES_X, z / (float)VERTICES_Z ) );
+	}
+}
+
+vboMesh.bufferIndices( indices );
+vboMesh.bufferTexCoords2d( 0, texCoords );
+\endcode
+ * <br/>
+ * The VboMesh and VertexIter objects are both designed with an \ImplShared <br/>
+ * 
+ */
 class VboMesh {
  public:
 	enum { NONE, STATIC, DYNAMIC };
 	enum { ATTR_INDICES, ATTR_POSITIONS, ATTR_NORMALS, ATTR_COLORS_RGB, ATTR_COLORS_RGBA, ATTR_TEXCOORDS2D_0, ATTR_TEXCOORDS2D_1, ATTR_TEXCOORDS2D_2, ATTR_TEXCOORDS2D_3, ATTR_TEXCOORDS3D_0, ATTR_TEXCOORDS3D_1, ATTR_TEXCOORDS3D_2, ATTR_TEXCOORDS3D_3, ATTR_TOTAL };
 	enum { ATTR_MAX_TEXTURE_UNIT = 3 };
 
-	//! Represents a configuration state for the VboMesh object
+	/** Represents a configuration state for the VboMesh object */
 	struct Layout {
 		Layout() { initAttributes(); }
 
-		//! \return is the Layout unspecified, presumably TBG by a constructor for VboMesh
+		//! Returns is the Layout unspecified, presumably TBG by a constructor for VboMesh
 		bool	isDefaults() const { for( int a = 0; a < ATTR_TOTAL; ++a ) if( mAttributes[a] != NONE ) return false; return true; }
 	
-		//! \return true if the format object defines normals
+		//! Returns true if the format object defines normals
 		bool	hasNormals() const { return hasDynamicNormals() || hasStaticNormals(); }
-		//! \return true if the format object defines static normal data
+		//! Returns true if the format object defines static normal data
 		bool	hasStaticNormals() const { return mAttributes[ATTR_NORMALS] == STATIC; }
-		//! \return true if the format object defines dynamic normal data
+		//! Returns true if the format object defines dynamic normal data
 		bool	hasDynamicNormals() const { return mAttributes[ATTR_NORMALS] == DYNAMIC; }
-		//! assigns to the normals the static attribute
+		//! Assigns to the normals the static attribute
 		void	setStaticNormals() { mAttributes[ATTR_NORMALS] = STATIC; }
-		//! assigns to the normals the dynamoic attribute
+		//! Assigns to the normals the dynamoic attribute
 		void	setDynamicNormals() { mAttributes[ATTR_NORMALS] = DYNAMIC; }		
 
-		//! \return true if the format object defines colors using three channels (RGB)
+		//! Returns true if the format object defines colors using three channels (RGB)
 		bool	hasColorsRGB() const { return hasDynamicColorsRGB() || hasStaticColorsRGB(); }
-		//! \return true if the format object defines static RGB color data
+		//! Returns true if the format object defines static RGB color data
 		bool	hasStaticColorsRGB() const { return mAttributes[ATTR_COLORS_RGB] == STATIC; }
-		//! \return true if the format object defines dynamic RGB color data
+		//! Returns true if the format object defines dynamic RGB color data
 		bool	hasDynamicColorsRGB() const { return mAttributes[ATTR_COLORS_RGB] == DYNAMIC; }
-		//! assigns to the RGB colors the static attribute
+		//! Assigns to the RGB colors the static attribute
 		void	setStaticColorsRGB() { mAttributes[ATTR_COLORS_RGB] = STATIC; mAttributes[ATTR_COLORS_RGBA] = NONE; }
-		//! assigns to the RGB colors the dynamic attribute
+		//! Assigns to the RGB colors the dynamic attribute
 		void	setDynamicColorsRGB() { mAttributes[ATTR_COLORS_RGB] = DYNAMIC; mAttributes[ATTR_COLORS_RGBA] = NONE; }		
 
-		//! \return true if the format object defines colors using four channels (RGBA)
+		//! Returns true if the format object defines colors using four channels (RGBA)
 		bool	hasColorsRGBA() const { return hasDynamicColorsRGBA() || hasStaticColorsRGBA(); }
-		//! \return true if the format object defines static RGBA color data
+		//! Returns true if the format object defines static RGBA color data
 		bool	hasStaticColorsRGBA() const { return mAttributes[ATTR_COLORS_RGBA] == STATIC; }
-		//! \return true if the format object defines dynamic RGBA color data
+		//! Returns true if the format object defines dynamic RGBA color data
 		bool	hasDynamicColorsRGBA() const { return mAttributes[ATTR_COLORS_RGBA] == DYNAMIC; }
-		//! assigns to the RGBA colors the static attribute
+		//! Assigns to the RGBA colors the static attribute
 		void	setStaticColorsRGBA() { mAttributes[ATTR_COLORS_RGBA] = STATIC; mAttributes[ATTR_COLORS_RGB] = NONE; }
-		//! assigns to the RGBA colors the static attribute
+		//! Assigns to the RGBA colors the static attribute
 		void	setDynamicColorsRGBA() { mAttributes[ATTR_COLORS_RGBA] = DYNAMIC; mAttributes[ATTR_COLORS_RGB] = NONE; }		
 		
-		//! \return true if 2d texture coordinates are defined for the given texture unit (defaults to zero)
+		//! Returns true if 2d texture coordinates are defined for the given texture unit (defaults to zero)
 		bool	hasTexCoords2d( size_t unit = 0 ) const { return hasDynamicTexCoords2d( unit ) || hasStaticTexCoords2d( unit ); }
-		//! \return true if 2d texture coordinates are defined as static data for the given texture unit (defaults to zero)
+		//! Returns true if 2d texture coordinates are defined as static data for the given texture unit (defaults to zero)
 		bool	hasStaticTexCoords2d( size_t unit = 0 ) const { return mAttributes[ATTR_TEXCOORDS2D_0 + unit] == STATIC; }		
-		//! \return true if 2d texture coordinates are defined as dynamic data for the given texture unit (defaults to zero)
+		//! Returns true if 2d texture coordinates are defined as dynamic data for the given texture unit (defaults to zero)
 		bool	hasDynamicTexCoords2d( size_t unit = 0 ) const { return mAttributes[ATTR_TEXCOORDS2D_0 + unit] == DYNAMIC; }
 		//! sets the 2d texture coordinates as static data for the given texture unit (defaults to zero)
 		void	setStaticTexCoords2d( size_t unit = 0 ) { mAttributes[ATTR_TEXCOORDS2D_0 + unit] = STATIC; mAttributes[ATTR_TEXCOORDS3D_0 + unit] = NONE; }
 		//! sets the 2d texture coordinates as dynamic data for the given texture unit (defaults to zero)
 		void	setDynamicTexCoords2d( size_t unit = 0 ) { mAttributes[ATTR_TEXCOORDS2D_0 + unit] = DYNAMIC; mAttributes[ATTR_TEXCOORDS3D_0 + unit] = NONE; }
-		//! \return are there any texture units with static texCoords
+		//! Returns are there any texture units with static texCoords
 		bool	hasStaticTexCoords() const;
-		//! \return are there any texture units with dynamic texCoords
+		//! Returns are there any texture units with dynamic texCoords
 		bool	hasDynamicTexCoords() const;
-		//! \return if texture unit \arg unit is enabled
+		//! Returns if texture unit \arg unit is enabled
 		bool	hasTexCoords( size_t unit ) const { return ( mAttributes[ATTR_TEXCOORDS2D_0 + unit] != NONE ) || ( mAttributes[ATTR_TEXCOORDS3D_0 + unit] != NONE ); }
 
-		//! \return true if 3d texture coordinates are defined for the given texture unit (defaults to zero)
+		//! Returns true if 3d texture coordinates are defined for the given texture unit (defaults to zero)
 		bool	hasTexCoords3d( size_t unit = 0 ) const { return hasDynamicTexCoords3d( unit ) || hasStaticTexCoords3d( unit ); }
-		//! \return true if 2d texture coordinates are defined as static data for the given texture unit (defaults to zero)
+		//! Returns true if 2d texture coordinates are defined as static data for the given texture unit (defaults to zero)
 		bool	hasStaticTexCoords3d( size_t unit = 0 ) const { return mAttributes[ATTR_TEXCOORDS3D_0 + unit] == STATIC; }		
-		//! \return true if 2d texture coordinates are defined as dynamic data for the given texture unit (defaults to zero)
+		//! Returns true if 2d texture coordinates are defined as dynamic data for the given texture unit (defaults to zero)
 		bool	hasDynamicTexCoords3d( size_t unit = 0 ) const { return mAttributes[ATTR_TEXCOORDS3D_0 + unit] == DYNAMIC; }
 		//! sets the 2d texture coordinates as static data for the given texture unit (defaults to zero)
 		void	setStaticTexCoords3d( size_t unit = 0 ) { mAttributes[ATTR_TEXCOORDS3D_0 + unit] = STATIC; mAttributes[ATTR_TEXCOORDS2D_0 + unit] = NONE; }
 		//! sets the 2d texture coordinates as dynamic data for the given texture unit (defaults to zero)
 		void	setDynamicTexCoords3d( size_t unit = 0 ) { mAttributes[ATTR_TEXCOORDS3D_0 + unit] = DYNAMIC; mAttributes[ATTR_TEXCOORDS2D_0 + unit] = NONE; }
 
-		//! \return true if indices are defined for the vertex data
+		//! Returns true if indices are defined for the vertex data
 		bool	hasIndices() const { return hasStaticIndices() || hasDynamicIndices(); }
-		//! \return true if indices are defined for the vertex data
+		//! Returns true if indices are defined for the vertex data
 		bool	hasStaticIndices() const { return mAttributes[ATTR_INDICES] == STATIC; }
-		//! \return true if the vertex indices are defined as static data
+		//! Returns true if the vertex indices are defined as static data
 		bool	hasDynamicIndices() const { return mAttributes[ATTR_INDICES] == DYNAMIC; }
-		//! assigns to the vertex index the static attribute
+		//! Assigns to the vertex index the static attribute
 		void	setStaticIndices() { mAttributes[ATTR_INDICES] = STATIC; }
-		//! assigns to the vertex index the dynamic attribute
+		//! Assigns to the vertex index the dynamic attribute
 		void	setDynamicIndices() { mAttributes[ATTR_INDICES] = DYNAMIC; }
 
-		//! \return true if the vertex positions are defined
+		//! Returns true if the vertex positions are defined
 		bool	hasPositions() const { return hasStaticPositions() || hasDynamicPositions(); }
-		//! \return true if the vertex positions are defined as static data
+		//! Returns true if the vertex positions are defined as static data
 		bool	hasStaticPositions() const { return mAttributes[ATTR_POSITIONS] == STATIC; }
-		//! \return true if the vertex positions are defined as dynamic data
+		//! Returns true if the vertex positions are defined as dynamic data
 		bool	hasDynamicPositions() const { return mAttributes[ATTR_POSITIONS] == DYNAMIC; }
-		//! assigns to the vertex positions the static attribute
+		//! Assigns to the vertex positions the static attribute
 		void	setStaticPositions() { mAttributes[ATTR_POSITIONS] = STATIC; }
-		//! assigns to the vertex positions the dynamic attribute
+		//! Assigns to the vertex positions the dynamic attribute
 		void	setDynamicPositions() { mAttributes[ATTR_POSITIONS] = DYNAMIC; }
 		
 		enum CustomAttr { CUSTOM_ATTR_FLOAT, CUSTOM_ATTR_FLOAT2, CUSTOM_ATTR_FLOAT3, CUSTOM_ATTR_FLOAT4, TOTAL_CUSTOM_ATTR_TYPES };
@@ -189,90 +261,92 @@ class VboMesh {
 	enum			{ INDEX_BUFFER = 0, STATIC_BUFFER, DYNAMIC_BUFFER, TOTAL_BUFFERS };
 	
   protected:
+	/** Internal shared implementation for the VboMesh object */
 	struct Obj {
-		size_t			mNumIndices, mNumVertices;	
+		size_t				mNumIndices, mNumVertices;	
 
-		Vbo				mBuffers[TOTAL_BUFFERS];
-		size_t			mPositionOffset;
-		size_t			mNormalOffset;
-		size_t			mColorRGBOffset, mColorRGBAOffset;		
-		size_t			mTexCoordOffset[ATTR_MAX_TEXTURE_UNIT+1];
-		size_t			mStaticStride, mDynamicStride;	
-		GLenum			mPrimitiveType;
-		Layout			mLayout;
-		std::vector<GLint>		mCustomStaticLocations;
-		std::vector<GLint>		mCustomDynamicLocations;
+		Vbo					mBuffers[TOTAL_BUFFERS];
+		size_t				mPositionOffset;
+		size_t				mNormalOffset;
+		size_t				mColorRGBOffset, mColorRGBAOffset;		
+		size_t				mTexCoordOffset[ATTR_MAX_TEXTURE_UNIT+1];
+		size_t				mStaticStride, mDynamicStride;	
+		GLenum				mPrimitiveType;
+		Layout				mLayout;
+		std::vector<GLint>	mCustomStaticLocations;
+		std::vector<GLint>	mCustomDynamicLocations;
 	};
 
   public:
 	class VertexIter;
- 
+	
+	/** \brief Creates an empty VboMesh instance */
 	VboMesh() {}
-	/*** Creates a VboMesh instance using the input TriMesh object to initialize the OpenGL buffers **/
+	/** \brief Creates a VboMesh instance using the input TriMesh object to initialize the OpenGL buffers */
 	explicit VboMesh( const TriMesh &triMesh, Layout layout = Layout() );
-	/*** Creates a VboMesh instance using the input TriMesh2d object to initialize the OpenGL buffers **/
+	/** \brief Creates a VboMesh instance using the input TriMesh2d object to initialize the OpenGL buffers */
 	explicit VboMesh( const TriMesh2d &triMesh, Layout layout = Layout() );
-	/*** Creates a VboMesh with \a numVertices vertices and \a numIndices indices. Dynamic data is stored interleaved and static data is planar. **/
+	/** \brief Creates a VboMesh with \a numVertices vertices and \a numIndices indices. Dynamic data is stored interleaved and static data is planar. */
 	VboMesh( size_t numVertices, size_t numIndices, Layout layout, GLenum primitiveType );
-	/*** Creates a VboMesh with \a numVertices vertices and \a numIndices indices. Accepts pointers to preexisting buffers, which may be NULL to request allocation **/
+	/** \brief Creates a VboMesh with \a numVertices vertices and \a numIndices indices. Accepts pointers to preexisting buffers, which may be NULL to request allocation */
 	VboMesh( size_t numVertices, size_t numIndices, Layout layout, GLenum primitiveType, Vbo *indexBuffer, Vbo *staticBuffer, Vbo *dynamicBuffer );
 
-	//! \return the number of vertex indices defined in the index buffer
-	size_t	getNumIndices() const { return mObj->mNumIndices; }
-	//! \return the number of vertex positions defined in the vertex buffer
-	size_t	getNumVertices() const { return mObj->mNumVertices; }
-	//! \return the primitive type defined for the vertex buffer object (GL_TRIANGLES, GL_QUADS, GL_LINES, etc)
-	GLenum	getPrimitiveType() const { return mObj->mPrimitiveType; }
+	//! Returns the number of vertex indices defined in the index buffer
+	size_t				getNumIndices() const { return mObj->mNumIndices; }
+	//! Returns the number of vertex positions defined in the vertex buffer
+	size_t				getNumVertices() const { return mObj->mNumVertices; }
+	//! Returns the primitive type defined for the vertex buffer object (GL_TRIANGLES, GL_QUADS, GL_LINES, etc)
+	GLenum				getPrimitiveType() const { return mObj->mPrimitiveType; }
 	
-	//! \return a constant reference to the internally stored layout object
-	const Layout&	getLayout() const { return mObj->mLayout; }
+	//! Returns a constant reference to the internally stored layout object
+	const Layout&		getLayout() const { return mObj->mLayout; }
 
 	//! Binds the vertex index buffer
-	void			bindIndexBuffer() const;
+	void				bindIndexBuffer() const;
 	//! Enables all client states associated with the VboMesh object
-	void			enableClientStates() const;
+	void				enableClientStates() const;
 	//! Disables all client states associated with the VboMesh object
-	void			disableClientStates() const;
+	void				disableClientStates() const;
 	//! Binds all buffer objects for drawing
-	void			bindAllData() const;
+	void				bindAllData() const;
 	//! Unbinds all vertex buffer objects
-	static void		unbindBuffers();
+	static void			unbindBuffers();
 
 	//! Buffers index data from an input STL vector container
-	void						bufferIndices( const std::vector<uint32_t> &indices );
+	void				bufferIndices( const std::vector<uint32_t> &indices );
 	//! Buffers vertex position data from an input STL vector container
-	void						bufferPositions( const std::vector<Vec3f> &positions );
+	void				bufferPositions( const std::vector<Vec3f> &positions );
 	//! Buffers vertex position data from an array of Vec3f objects
-	void						bufferPositions( const Vec3f *positions, size_t count );
+	void				bufferPositions( const Vec3f *positions, size_t count );
 	//! Buffers normal vector data from an input STL vector container
-	void						bufferNormals( const std::vector<Vec3f> &normals );
+	void				bufferNormals( const std::vector<Vec3f> &normals );
 	//! Buffers 2d texture coordinate data to the input texture unit from an input STL vector container
-	void						bufferTexCoords2d( size_t unit, const std::vector<Vec2f> &texCoords );
+	void				bufferTexCoords2d( size_t unit, const std::vector<Vec2f> &texCoords );
 	//! Buffers 3d texture coordinate data to the input texture unit from an input STL vector container
-	void						bufferTexCoords3d( size_t unit, const std::vector<Vec3f> &texCoords );
+	void				bufferTexCoords3d( size_t unit, const std::vector<Vec3f> &texCoords );
 	//! Buffers RGB color data from an input STL vector container
-	void						bufferColorsRGB( const std::vector<Color> &colors );
+	void				bufferColorsRGB( const std::vector<Color> &colors );
 	//! Buffers RGBA color data from an input STL vector container
-	void						bufferColorsRGBA( const std::vector<ColorA> &colors );
-	//! \return a vertex iterator to the mapped buffer object
-	class VertexIter			mapVertexBuffer();
+	void				bufferColorsRGBA( const std::vector<ColorA> &colors );
+	//! Returns a vertex iterator to the mapped buffer object
+	class VertexIter	mapVertexBuffer();
 
-	//! \return a reference to the vbo object that stores the vertex index data
+	//! Returns a reference to the vbo object that stores the vertex index data
 	Vbo&				getIndexVbo() const { return mObj->mBuffers[INDEX_BUFFER]; }
-	//! \return a reference to the vbo object that stores the static data
+	//! Returns a reference to the vbo object that stores the static data
 	Vbo&				getStaticVbo() const { return mObj->mBuffers[STATIC_BUFFER]; }
-	//! \return a reference to the vbo object that stores the dynamic data
+	//! Returns a reference to the vbo object that stores the dynamic data
 	Vbo&				getDynamicVbo() const { return mObj->mBuffers[DYNAMIC_BUFFER]; }
 
-	//! assigns a custom location for statically buffered data
+	//! Assigns a custom location for statically buffered data
 	void				setCustomStaticLocation( size_t internalIndex, GLuint location ) { mObj->mCustomStaticLocations[internalIndex] = location; }
-	//! assigns a custom location for dynamically buffered data
+	//! Assigns a custom location for dynamically buffered data
 	void				setCustomDynamicLocation( size_t internalIndex, GLuint location ) { mObj->mCustomDynamicLocations[internalIndex] = location; }
 
-	//! \return the texture coordinate offset for the given texture unit
-	size_t						getTexCoordOffset( size_t unit ) const { return mObj->mTexCoordOffset[unit]; }
-	//! assigns the texture coordinate offset for the given texture unit
-	void						setTexCoordOffset( size_t unit, size_t aTexCoordOffset ) { mObj->mTexCoordOffset[unit] = aTexCoordOffset; }	
+	//! Returns the texture coordinate offset for the given texture unit
+	size_t				getTexCoordOffset( size_t unit ) const { return mObj->mTexCoordOffset[unit]; }
+	//! Assigns the texture coordinate offset for the given texture unit
+	void				setTexCoordOffset( size_t unit, size_t aTexCoordOffset ) { mObj->mTexCoordOffset[unit] = aTexCoordOffset; }	
 
 	//@{
 	//! Emulates shared_ptr-like behavior
@@ -281,55 +355,56 @@ class VboMesh {
 	void reset() { mObj.reset(); }
 	//@}
 
-	//! Defines an iterator type for Vertex data stored in a VboMesh
+	/** Defines an iterator type for Vertex data stored in a VboMesh */
 	class VertexIter {
 	 public:
+		/** Exposes write access to the buffered contents of a dynamic VBO */
 		VertexIter( const VboMesh &mesh );
 
-		//! assigns a new position to the current vertex
+		//! Assigns a new position to the current vertex
 		void	setPosition( const Vec3f &v ) { *(reinterpret_cast<Vec3f*>( &mPtr[mPositionOffset] )) = v; }
-		//! assigns a new position to the current vertex
+		//! Assigns a new position to the current vertex
 		void	setPosition( float x, float y, float z ) { *(reinterpret_cast<Vec3f*>( &mPtr[mPositionOffset] )) = Vec3f( x, y, z ); }
-		//! assigns a new normal to the current vertex
+		//! Assigns a new normal to the current vertex
 		void	setNormal( const Vec3f &n ) { *(reinterpret_cast<Vec3f*>( &mPtr[mNormalOffset] )) = n; }
-		//! assigns a new RGB color to the current vertex
+		//! Assigns a new RGB color to the current vertex
 		void	setColorRGB( const Color &n ) { *(reinterpret_cast<Color*>( &mPtr[mColorRGBOffset] )) = n; }
-		//! assigns a new RGBA color to the current vertex
+		//! Assigns a new RGBA color to the current vertex
 		void	setColorRGBA( const ColorA &n ) { *(reinterpret_cast<ColorA*>( &mPtr[mColorRGBAOffset] )) = n; }
-		//! assigns a new 2d texture coordinate on the first texture unit to the current vertex
+		//! Assigns a new 2d texture coordinate on the first texture unit to the current vertex
 		void	setTexCoord2d0( const Vec2f &t ) { *(reinterpret_cast<Vec2f*>( &mPtr[mTexCoordOffset[0]] )) = t; }
-		//! assigns a new 3d texture coordinate on the first texture unit to the current vertex
+		//! Assigns a new 3d texture coordinate on the first texture unit to the current vertex
 		void	setTexCoord3d0( const Vec3f &t ) { *(reinterpret_cast<Vec3f*>( &mPtr[mTexCoordOffset[0]] )) = t; }
-		//! assigns a new 2d texture coordinate on the second texture unit to the current vertex
+		//! Assigns a new 2d texture coordinate on the second texture unit to the current vertex
 		void	setTexCoord2d1( const Vec2f &t ) { *(reinterpret_cast<Vec2f*>( &mPtr[mTexCoordOffset[1]] )) = t; }
-		//! assigns a new 3d texture coordinate on the second texture unit to the current vertex
+		//! Assigns a new 3d texture coordinate on the second texture unit to the current vertex
 		void	setTexCoord3d1( const Vec3f &t ) { *(reinterpret_cast<Vec3f*>( &mPtr[mTexCoordOffset[1]] )) = t; }
-		//! assigns a new 2d texture coordinate on the third texture unit to the current vertex
+		//! Assigns a new 2d texture coordinate on the third texture unit to the current vertex
 		void	setTexCoord2d2( const Vec2f &t ) { *(reinterpret_cast<Vec2f*>( &mPtr[mTexCoordOffset[2]] )) = t; }
-		//! assigns a new 3d texture coordinate on the third texture unit to the current vertex
+		//! Assigns a new 3d texture coordinate on the third texture unit to the current vertex
 		void	setTexCoord3d2( const Vec3f &t ) { *(reinterpret_cast<Vec3f*>( &mPtr[mTexCoordOffset[2]] )) = t; }
-		//! assigns a new floating point value as a custom attribute to the current vertex
+		//! Assigns a new floating point value as a custom attribute to the current vertex
 		void	setCustomFloat( size_t index, float v ) { *(reinterpret_cast<float*>( &mPtr[mObj->mCustomOffsets[index]] )) = v; }
-		//! assigns a new 2d vector as a custom attribute to the current vertex
+		//! Assigns a new 2d vector as a custom attribute to the current vertex
 		void	setCustomVec2f( size_t index, const Vec2f &v ) { *(reinterpret_cast<Vec2f*>( &mPtr[mObj->mCustomOffsets[index]] )) = v; }
-		//! assigns a new 3d vector as a custom attribute to the current vertex
+		//! Assigns a new 3d vector as a custom attribute to the current vertex
 		void	setCustomVec3f( size_t index, const Vec3f &v ) { *(reinterpret_cast<Vec3f*>( &mPtr[mObj->mCustomOffsets[index]] )) = v; }
-		//! assigns a new 4d vector as a custom attribute to the current vertex
+		//! Assigns a new 4d vector as a custom attribute to the current vertex
 		void	setCustomVec4f( size_t index, const Vec4f &v ) { *(reinterpret_cast<Vec4f*>( &mPtr[mObj->mCustomOffsets[index]] )) = v; }
 
-		//! advances pointer to the next vertex
-		void operator++() { mPtr += mStride; }
-		//! \return true if the iterator may be advanced
+		//! Advances buffer pointer to the next vertex
+		void 	operator++() { mPtr += mStride; }
+		//! Returns true if the iterator may be advanced
 		bool	isDone() const { return mPtr < mDataEnd; }
 		
-		//! \return Which vertex the iterator is pointing to
-		size_t		getIndex() const { return ( mPtr - mData ) / mStride; }
-		//! \return Which vertex the iterator is pointing to
-		size_t		getStride() const { return mStride; }
-		//! \return Raw pointer where the iterator is currently writing
-		void*		getPointer() const { return reinterpret_cast<void*>( mPtr ); }
-		//! \return pointer where the iterator is currently writing positions
-		Vec3f*		getPositionPointer() const { return reinterpret_cast<Vec3f*>( &mPtr[mPositionOffset] ); }		
+		//! Returns which vertex the iterator is pointing to
+		size_t	getIndex() const { return ( mPtr - mData ) / mStride; }
+		//! Returns which vertex the iterator is pointing to
+		size_t	getStride() const { return mStride; }
+		//! Returns raw pointer where the iterator is currently writing
+		void*	getPointer() const { return reinterpret_cast<void*>( mPtr ); }
+		//! Returns pointer where the iterator is currently writing positions
+		Vec3f*	getPositionPointer() const { return reinterpret_cast<Vec3f*>( &mPtr[mPositionOffset] ); }		
 
 //		VertexIter( const VertexIter &other ) { set( other ); }	
 //		VertexIter& operator=( const VertexIter &other ) { set( other ); return *this; }
@@ -337,6 +412,7 @@ class VboMesh {
 	 protected:
 		void set( const VertexIter &other );
 
+		/** Internal shared implementation for the vertex buffer iterator type */
 		struct Obj {
 		 public:
 			Obj( const VboMesh &mesh );
