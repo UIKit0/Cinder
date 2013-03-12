@@ -1,6 +1,8 @@
 ### Cinder 0.8.5dev: [libcinder.org](http://libcinder.org)
 
-**Cinder is a peer-reviewed, free, open source C++ library for creative coding.**
+**This branch has been merged into and superseded by [dev](http://github.com/cinder/Cinder/tree/dev)**
+
+Cinder is a peer-reviewed, free, open source C++ library for creative coding.
 
 To get started with Cinder from GitHub, please read this [git setup document](http://libcinder.org/docs/welcome/GitSetup.html). You might also prefer one of our [pre-packaged downloads](http://libcinder.org/download/).
 
