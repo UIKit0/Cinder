@@ -37,11 +37,15 @@
 #include <string>
 
 #if defined( CINDER_MAC )
-	#include <QuickTime/QuickTime.h>
+//	#include <QuickTime/QuickTime.h>
+	#import <AVFoundation/AVFoundation.h>
 	#if defined( __OBJC__ )
-		@class QTMovie;
+		//@class QTMovie;
+		@class AVPlayer, AVPlayerLayer;
 	#else
-		class QTMovie;
+		//class QTMovie;
+		class AVPlayer;
+		class AVPlayerLayer;
 	#endif
 #endif
 
@@ -148,7 +152,8 @@ class MovieBase {
 	void	setNewFrameCallback( void(*aNewFrameCallback)( long, void * ), void *aNewFrameCallbackRefcon );
 
 	//! Returns the native QuickTime Movie data structure
-	::Movie	getMovieHandle() const { return getObj()->mMovie; }
+//	::Movie	getMovieHandle() const { return getObj()->mMovie; }
+	AVAsset* getMovieHandle() const { return getObj()->mAsset; }
 
  protected:
 	MovieBase() {}
@@ -158,8 +163,9 @@ class MovieBase {
 
 	void			setupFft( FourCharCode code, uint32_t bandNum, uint8_t channelNum );
 
-	static int32_t		countFrames( ::Movie theMovie );
-	TimeValue			getStartTimeOfFirstSample() const;
+//	static int32_t		countFrames( ::Movie theMovie );
+//	TimeValue			getStartTimeOfFirstSample() const;
+	CMTime				getStartTimeOfFirstSample() const;
 
  protected:
 	void	initFromPath( const fs::path &filePath );
@@ -187,12 +193,14 @@ class MovieBase {
 		bool						mLoaded, mPlayable;
 		bool						mPlayingForward, mLoop, mPalindrome;
 
-		QTAudioFrequencyLevels		*mFFTData;
-		FourCharCode				mFFTFourCharCode;
-		uint32_t					mFFTNumBandLevels;
-		uint32_t					mFFTNumChannels;
-		QTVisualContextRef			mVisualContext;
-		::Movie						mMovie;
+//		QTAudioFrequencyLevels		*mFFTData;
+//		FourCharCode				mFFTFourCharCode;
+//		uint32_t					mFFTNumBandLevels;
+//		uint32_t					mFFTNumChannels;
+//		QTVisualContextRef			mVisualContext;
+//		::Movie						mMovie;
+		AVAsset*					mAsset;
+		
 
 		void		(*mNewFrameCallback)(long timeValue, void *refcon);
 		void		*mNewFrameCallbackRefcon;			
@@ -309,10 +317,12 @@ class MovieLoader {
 	const Url&		getUrl() const { return mObj->mUrl; }
 
 	//! Returns the native QuickTime Movie data structure but still maintains ownership of it
-	::Movie	getMovieHandle() const { return mObj->mMovie; }
+//	::Movie	getMovieHandle() const { return mObj->mMovie; }
+	AVAsset* getMovieHandle() const { return mObj->mAsset; }
 
 	//! Returns the native QuickTime Movie and marks itself as no longer the owner. In general you should not call this.
-	::Movie transferMovieHandle() const { mObj->mOwnsMovie = false; return mObj->mMovie; }
+//	::Movie transferMovieHandle() const { mObj->mOwnsMovie = false; return mObj->mMovie; }
+	AVAsset* transferMovieHandle() const { mObj->mOwnsMovie = false; return mObj->mAsset; }
 	
   protected:
 	void	updateLoadState() const;
@@ -322,7 +332,9 @@ class MovieLoader {
 		~Obj();
 		
 		mutable bool	mOwnsMovie;
-		::Movie			mMovie;
+//		::Movie			mMovie;
+		AVAsset*		mAsset;
+		AVAssetReader	mAssetReader;
 		Url				mUrl;
 		mutable bool	mLoaded, mPlayable, mPlaythroughOK;
 	};

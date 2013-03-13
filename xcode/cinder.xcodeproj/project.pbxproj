@@ -651,6 +651,15 @@
 		277C2CF11366632B00178A29 /* Matrix33.h in Headers */ = {isa = PBXBuildFile; fileRef = 277C2CED1366632B00178A29 /* Matrix33.h */; };
 		277C2CF21366632B00178A29 /* Matrix44.h in Headers */ = {isa = PBXBuildFile; fileRef = 277C2CEE1366632B00178A29 /* Matrix44.h */; };
 		277C2CF31366632B00178A29 /* MatrixAlgo.h in Headers */ = {isa = PBXBuildFile; fileRef = 277C2CEF1366632B00178A29 /* MatrixAlgo.h */; };
+		3C55618416EED74E0046D718 /* MovieWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618116EED74E0046D718 /* MovieWriter.h */; };
+		3C55618516EED74E0046D718 /* MovieWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618116EED74E0046D718 /* MovieWriter.h */; };
+		3C55618616EED74E0046D718 /* MovieWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618116EED74E0046D718 /* MovieWriter.h */; };
+		3C55618716EED74E0046D718 /* QuickTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618216EED74E0046D718 /* QuickTime.h */; };
+		3C55618816EED74E0046D718 /* QuickTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618216EED74E0046D718 /* QuickTime.h */; };
+		3C55618916EED74E0046D718 /* QuickTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618216EED74E0046D718 /* QuickTime.h */; };
+		3C55618A16EED74E0046D718 /* QuickTimeUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618316EED74E0046D718 /* QuickTimeUtils.h */; };
+		3C55618B16EED74E0046D718 /* QuickTimeUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618316EED74E0046D718 /* QuickTimeUtils.h */; };
+		3C55618C16EED74E0046D718 /* QuickTimeUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C55618316EED74E0046D718 /* QuickTimeUtils.h */; };
 		434708D91267EE4300AA7349 /* Blend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 434708D81267EE4300AA7349 /* Blend.cpp */; };
 		434708DA1267EE4300AA7349 /* Blend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 434708D81267EE4300AA7349 /* Blend.cpp */; };
 		434708DB1267EE4300AA7349 /* Blend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 434708D81267EE4300AA7349 /* Blend.cpp */; };
@@ -1007,6 +1016,9 @@
 		277C2CEE1366632B00178A29 /* Matrix44.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = Matrix44.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		277C2CEF1366632B00178A29 /* MatrixAlgo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MatrixAlgo.h; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* cinder_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cinder_Prefix.pch; sourceTree = "<group>"; };
+		3C55618116EED74E0046D718 /* MovieWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MovieWriter.h; path = qtime/MovieWriter.h; sourceTree = "<group>"; };
+		3C55618216EED74E0046D718 /* QuickTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QuickTime.h; path = qtime/QuickTime.h; sourceTree = "<group>"; };
+		3C55618316EED74E0046D718 /* QuickTimeUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QuickTimeUtils.h; path = qtime/QuickTimeUtils.h; sourceTree = "<group>"; };
 		434708D81267EE4300AA7349 /* Blend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Blend.cpp; path = ip/Blend.cpp; sourceTree = "<group>"; };
 		4354C47B1357BBED00120EE3 /* TextureFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextureFont.h; path = gl/TextureFont.h; sourceTree = "<group>"; };
 		4354C47F1357BC1100120EE3 /* TextureFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextureFont.cpp; path = gl/TextureFont.cpp; sourceTree = "<group>"; };
@@ -1333,6 +1345,7 @@
 		00BAE6C50E7EDD7F0018A608 /* cinder */ = {
 			isa = PBXGroup;
 			children = (
+				3C55617F16EED73B0046D718 /* qtime */,
 				008B439914F5F37200B55B07 /* svg */,
 				003ADB5F1038844300ACF6F2 /* params */,
 				00C07D8D0FFF1E43004801EA /* ip */,
@@ -1640,6 +1653,16 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
+		3C55617F16EED73B0046D718 /* qtime */ = {
+			isa = PBXGroup;
+			children = (
+				3C55618116EED74E0046D718 /* MovieWriter.h */,
+				3C55618216EED74E0046D718 /* QuickTime.h */,
+				3C55618316EED74E0046D718 /* QuickTimeUtils.h */,
+			);
+			name = qtime;
+			sourceTree = "<group>";
+		};
 		C7BA405B0FA8BEFD00AADC07 /* audio */ = {
 			isa = PBXGroup;
 			children = (
@@ -1807,6 +1830,9 @@
 				005B0302152CD16E00F2C237 /* json_tool.h in Headers */,
 				007A7B18158D09A600BEAD18 /* Window.h in Headers */,
 				0053819B15A8CDF90019BA91 /* Event.h in Headers */,
+				3C55618516EED74E0046D718 /* MovieWriter.h in Headers */,
+				3C55618816EED74E0046D718 /* QuickTime.h in Headers */,
+				3C55618B16EED74E0046D718 /* QuickTimeUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1937,6 +1963,9 @@
 				007A7B19158D09A600BEAD18 /* Window.h in Headers */,
 				0053819C15A8CDF90019BA91 /* Event.h in Headers */,
 				00E5A41C163F5A2B00AACB3A /* CaptureImplCocoaDummy.h in Headers */,
+				3C55618616EED74E0046D718 /* MovieWriter.h in Headers */,
+				3C55618916EED74E0046D718 /* QuickTime.h in Headers */,
+				3C55618C16EED74E0046D718 /* QuickTimeUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2092,6 +2121,9 @@
 				003C0CE715A34D3F00FF29F5 /* AppCocoaView.h in Headers */,
 				0053819A15A8CDF90019BA91 /* Event.h in Headers */,
 				002CFA601644BBF400C1A31D /* StereoAutoFocuser.h in Headers */,
+				3C55618416EED74E0046D718 /* MovieWriter.h in Headers */,
+				3C55618716EED74E0046D718 /* QuickTime.h in Headers */,
+				3C55618A16EED74E0046D718 /* QuickTimeUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

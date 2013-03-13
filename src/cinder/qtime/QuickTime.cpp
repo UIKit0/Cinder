@@ -72,6 +72,7 @@ static GWorldPtr sDefaultGWorld;
 
 void startQuickTime()
 {
+	/*
 	static bool initialized = false;
 	
 	if( initialized )
@@ -88,6 +89,7 @@ void startQuickTime()
 	boundsRect.left = boundsRect.top = 0;
 	boundsRect.right = boundsRect.bottom = 4;
 	::QTNewGWorld( &sDefaultGWorld, k24BGRPixelFormat, &boundsRect, NULL, NULL, 0 );
+	 */
 }
 
 float MovieBase::getPixelAspectRatio() const
